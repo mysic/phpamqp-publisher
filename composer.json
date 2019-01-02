@@ -1,0 +1,18 @@
+{
+    "name": "mysic/phpamqplib-publisher",
+    "description": "消息队列生产者",
+    "type": "library",
+    "require": {
+        "php-amqplib/php-amqplib": "^2.8"
+    },
+    "require-dev": {
+        "php-amqplib/php-amqplib": "^2.8@dev"
+    },
+    "authors": [
+        {
+            "name": "jixiang",
+            "email": "6817778@qq.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
