@@ -19,29 +19,29 @@ class Publisher
     public function  __construct(string $host,int $port,string $user,string $pass,string $vHost = '/')
     {
         $this->connection = MqConnector::instance($host, $port, $user, $pass, $vHost);
-        $this->configs = require_once 'Base' . DIRECTORY_SEPARATOR . 'config.php';
+        $this->configs = require_once 'config.php';
     }
 
     /**
      * @param array  $msg
      * @param string $tagName
      * @param array $properties
-     * [
-     *  'content_type' => 'shortstr',
-     *  'content_encoding' => 'shortstr',
-     *  'application_headers' => 'table_object',
-     *  'delivery_mode' => 'octet',
-     *  'priority' => 'octet',
-     *  'correlation_id' => 'shortstr',
-     *  'reply_to' => 'shortstr',
-     *  'expiration' => 'shortstr',
-     *  'message_id' => 'shortstr',
-     *  'timestamp' => 'timestamp',
-     *  'type' => 'shortstr',
-     *  'user_id' => 'shortstr',
-     *  'app_id' => 'shortstr',
-     *  'cluster_id' => 'shortstr',
-     *  ]
+        * [
+        *  'content_type' => 'shortstr',
+        *  'content_encoding' => 'shortstr',
+        *  'application_headers' => 'table_object',
+        *  'delivery_mode' => 'octet',
+        *  'priority' => 'octet',
+        *  'correlation_id' => 'shortstr',
+        *  'reply_to' => 'shortstr',
+        *  'expiration' => 'shortstr',
+        *  'message_id' => 'shortstr',
+        *  'timestamp' => 'timestamp',
+        *  'type' => 'shortstr',
+        *  'user_id' => 'shortstr',
+        *  'app_id' => 'shortstr',
+        *  'cluster_id' => 'shortstr',
+        *  ]
 
      */
     public function publish(array $msg, string $tagName = 'default', array $properties = [])
