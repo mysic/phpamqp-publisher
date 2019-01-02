@@ -15,48 +15,53 @@ use PhpAmqpLib\Message\AMQPMessage;
 class Publisher
 {
     protected $connection = null;
+    protected $channel = null;
+    protected $tagName = '';
     protected $configs = [];
-    public function  __construct(string $host,int $port,string $user,string $pass,string $vHost = '/')
+    public function  __construct(string $host,int $port,string $user,string $pass,string $vHost = '/', $tagName = 'default')
     {
         $this->connection = MqConnector::instance($host, $port, $user, $pass, $vHost);
         $this->configs = require_once 'config.php';
+        $this->tagName = $tagName;
+        $this->channel = $this->channelDeclare($this->configs['channels'][$tagName]);
+    }
+
+    public function __destruct()
+    {
+        $this->channel->close();
+        $this->connection->close();
     }
 
     /**
      * @param array  $msg
-     * @param string $tagName
-     * @param array $properties
-        * [
-        *  'content_type' => 'shortstr',
-        *  'content_encoding' => 'shortstr',
-        *  'application_headers' => 'table_object',
-        *  'delivery_mode' => 'octet',
-        *  'priority' => 'octet',
-        *  'correlation_id' => 'shortstr',
-        *  'reply_to' => 'shortstr',
-        *  'expiration' => 'shortstr',
-        *  'message_id' => 'shortstr',
-        *  'timestamp' => 'timestamp',
-        *  'type' => 'shortstr',
-        *  'user_id' => 'shortstr',
-        *  'app_id' => 'shortstr',
-        *  'cluster_id' => 'shortstr',
-        *  ]
-
+     * @param array  $properties
+            [
+                'content_type' => 'shortstr',
+                'content_encoding' => 'shortstr',
+                'application_headers' => 'table_object',
+                'delivery_mode' => 'octet',
+                'priority' => 'octet',
+                'correlation_id' => 'shortstr',
+                'reply_to' => 'shortstr',
+                'expiration' => 'shortstr',
+                'message_id' => 'shortstr',
+                'timestamp' => 'timestamp',
+                'type' => 'shortstr',
+                'user_id' => 'shortstr',
+                'app_id' => 'shortstr',
+                'cluster_id' => 'shortstr',
+            ]
+     * @throws \Exception
      */
-    public function publish(array $msg, string $tagName = 'default', array $properties = [])
+    public function publish(array $msg, array $properties = [])
     {
-        if (empty($msg['op'])) {
-            new \Exception('消息缺少操作类型 [op => add|update|delete|search]');
+        if(empty($msg)) {
+            throw new \Exception('消息体不能为空',1000);
         }
-        if(empty($msg['body'])) {
-            new \Exception('消息体不能为空 [body]');
-        }
-        $channel = $this->channelDeclare($this->configs['channels'][$tagName]);
-        $this->exchangeDeclare($channel, $this->configs['exchanges'][$tagName]);
-        $this->queueDeclare($channel, $this->configs['queues'][$tagName]);
+        $this->exchangeDeclare($this->configs['exchanges'][$this->tagName]);
+        $this->queueDeclare($this->configs['queues'][$this->tagName]);
         $message = new AMQPMessage($msg, $properties);
-        $this->basicPublish($channel, $message, $this->configs['publish'][$tagName]);
+        $this->basicPublish($message, $this->configs['publish'][$this->tagName]);
     }
 
     protected function channelDeclare($channelId): AMQPChannel
@@ -64,9 +69,9 @@ class Publisher
         return $this->connection->channel($channelId);
     }
 
-    protected function exchangeDeclare(AMQPChannel $channel, array $config)
+    protected function exchangeDeclare(array $config)
     {
-        return $channel->exchange_declare(
+        return $this->channel->exchange_declare(
             $config['exchange'],
             $config['type'],
             $config['passive'],
@@ -79,12 +84,12 @@ class Publisher
         );
     }
 
-    protected function queueDeclare(AMQPChannel $channel, array $config)
+    protected function queueDeclare(array $config)
     {
         if (empty($config)) {
-            return $channel->queue_declare();
+            return $this->channel->queue_declare();
         }
-        return $channel->queue_declare(
+        return $this->channel->queue_declare(
             $config['queue'],
             $config['passive'],
             $config['durable'],
@@ -96,12 +101,12 @@ class Publisher
         );
     }
 
-    protected function basicPublish(AMQPChannel $channel, AMQPMessage $msg, array $config = [])
+    protected function basicPublish(AMQPMessage $msg, array $config = [])
     {
         if (empty($config)) {
-            return $channel->basic_publish($msg);
+            return $this->channel->basic_publish($msg);
         }
-        return $channel->basic_publish(
+        return $this->channel->basic_publish(
             $msg,
             $config['exchange'],
             $config['routing_key'],
