@@ -6,7 +6,7 @@
  * Time: 13:48
  */
 
-namespace PhpAMQPPublisher\Base;
+namespace MysicAMQP\Base;
 
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 

@@ -6,9 +6,9 @@
  * Time: 15:06
  */
 
-namespace PhpAMQPPublisher\Publisher;
+namespace MysicAMQP;
 
-use PhpAMQPPublisher\Base\MqConnector;
+use MysicAMQP\Base\MqConnector;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 

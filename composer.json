@@ -14,5 +14,7 @@
             "email": "6817778@qq.com"
         }
     ],
-    "minimum-stability": "dev"
+    "autoload":{
+        "psr-4":{"MysicAMQP\\":"src/"}
+    }
 }
