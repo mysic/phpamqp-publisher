@@ -23,7 +23,7 @@ class Publisher
         $this->connection = MqConnector::instance($config['host'], $config['port'], $config['user'], $config['pass'], $config['vHost']);
         $this->config = $config;
         $this->channel = $this->channelDeclare($config['channel']['channel_id']);
-        if(empty($config['channel']['basic_qos'])) {
+        if(!empty($config['channel']['basic_qos'])) {
             $this->channel->basic_qos(
                 $config['channel']['basic_qos']['prefetch_size'],
                 $config['channel']['basic_qos']['prefetch_count'],
@@ -43,13 +43,12 @@ class Publisher
      * @param array  $properties
      * @throws \Exception
      */
-    public function publish(array $msg, array $properties = [])
+    public function publish(string $msg, array $properties = [])
     {
         if(empty($msg)) {
             throw new \Exception('消息体不能为空',1000);
         }
         $this->exchangeDeclare($this->config['exchange']);
-        $this->queueDeclare($this->config['queue']);
         $message = new AMQPMessage($msg, $properties);
         $this->basicPublish($message, $this->config['publish']);
     }
@@ -73,24 +72,6 @@ class Publisher
             $config['ticket']
         );
     }
-
-    protected function queueDeclare(array $config)
-    {
-        if (empty($config)) {
-            return $this->channel->queue_declare();
-        }
-        return $this->channel->queue_declare(
-            $config['queue'],
-            $config['passive'],
-            $config['durable'],
-            $config['exclusive'],
-            $config['auto_delete'],
-            $config['nowait'],
-            $config['arguments'],
-            $config['ticket']
-        );
-    }
-
     protected function basicPublish(AMQPMessage $msg, array $config = [])
     {
         if (empty($config)) {
