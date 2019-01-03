@@ -6,7 +6,7 @@
  * Time: 13:48
  */
 
-namespace Base;
+namespace PhpAMQPPublisher\Base;
 
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 

@@ -6,9 +6,9 @@
  * Time: 15:06
  */
 
-namespace Publisher;
+namespace PhpAMQPPublisher\Publisher;
 
-use Base\MqConnector;
+use PhpAMQPPublisher\Base\MqConnector;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 
