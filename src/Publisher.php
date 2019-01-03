@@ -16,14 +16,20 @@ class Publisher
 {
     protected $connection = null;
     protected $channel = null;
+    protected $config = [];
     protected $tagName = '';
-    protected $configs = [];
-    public function  __construct(string $host,int $port,string $user,string $pass,string $vHost = '/', $tagName = 'default')
+    public function  __construct(array $config)
     {
-        $this->connection = MqConnector::instance($host, $port, $user, $pass, $vHost);
-        $this->configs = require_once 'config.php';
-        $this->tagName = $tagName;
-        $this->channel = $this->channelDeclare($this->configs['channels'][$tagName]);
+        $this->connection = MqConnector::instance($config['host'], $config['port'], $config['user'], $config['pass'], $config['vHost']);
+        $this->config = $config;
+        $this->channel = $this->channelDeclare($config['channel']['channel_id']);
+        if(empty($config['channel']['basic_qos'])) {
+            $this->channel->basic_qos(
+                $config['channel']['basic_qos']['prefetch_size'],
+                $config['channel']['basic_qos']['prefetch_count'],
+                $config['channel']['basic_qos']['global']
+            );
+        }
     }
 
     public function __destruct()
@@ -35,22 +41,6 @@ class Publisher
     /**
      * @param array  $msg
      * @param array  $properties
-            [
-                'content_type' => 'shortstr',
-                'content_encoding' => 'shortstr',
-                'application_headers' => 'table_object',
-                'delivery_mode' => 'octet',
-                'priority' => 'octet',
-                'correlation_id' => 'shortstr',
-                'reply_to' => 'shortstr',
-                'expiration' => 'shortstr',
-                'message_id' => 'shortstr',
-                'timestamp' => 'timestamp',
-                'type' => 'shortstr',
-                'user_id' => 'shortstr',
-                'app_id' => 'shortstr',
-                'cluster_id' => 'shortstr',
-            ]
      * @throws \Exception
      */
     public function publish(array $msg, array $properties = [])
@@ -58,10 +48,10 @@ class Publisher
         if(empty($msg)) {
             throw new \Exception('消息体不能为空',1000);
         }
-        $this->exchangeDeclare($this->configs['exchanges'][$this->tagName]);
-        $this->queueDeclare($this->configs['queues'][$this->tagName]);
+        $this->exchangeDeclare($this->config['exchange']);
+        $this->queueDeclare($this->config['queue']);
         $message = new AMQPMessage($msg, $properties);
-        $this->basicPublish($message, $this->configs['publish'][$this->tagName]);
+        $this->basicPublish($message, $this->config['publish']);
     }
 
     protected function channelDeclare($channelId): AMQPChannel
