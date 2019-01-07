@@ -18,18 +18,10 @@ class Publisher
     protected $channel = null;
     protected $config = [];
     protected $tagName = '';
-    public function  __construct(array $config)
+    public function  __construct(array $conn, array $config)
     {
-        $this->connection = MqConnector::instance($config['host'], $config['port'], $config['user'], $config['pass'], $config['vHost']);
+        $this->connection = MqConnector::instance($conn['host'], $conn['port'], $conn['user'], $conn['pass'], $conn['vHost']);
         $this->config = $config;
-        $this->channel = $this->channelDeclare($config['channel']['channel_id']);
-        if(!empty($config['channel']['basic_qos'])) {
-            $this->channel->basic_qos(
-                $config['channel']['basic_qos']['prefetch_size'],
-                $config['channel']['basic_qos']['prefetch_count'],
-                $config['channel']['basic_qos']['global']
-            );
-        }
     }
 
     public function __destruct()
@@ -47,6 +39,14 @@ class Publisher
     {
         if(empty($msg)) {
             throw new \Exception('消息体不能为空',1000);
+        }
+        $this->channel = $this->channelDeclare($this->config['channel']['channel_id']);
+        if(!empty($this->config['channel']['basic_qos'])) {
+            $this->channel->basic_qos(
+                $this->config['channel']['basic_qos']['prefetch_size'],
+                $this->config['channel']['basic_qos']['prefetch_count'],
+                $this->config['channel']['basic_qos']['global']
+            );
         }
         $this->exchangeDeclare($this->config['exchange']);
         $message = new AMQPMessage($msg, $properties);
