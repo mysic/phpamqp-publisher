@@ -26,7 +26,9 @@ class Publisher
 
     public function __destruct()
     {
-        $this->channel->close();
+        if($this->channel instanceof AMQPChannel) {
+            $this->channel->close();
+        }
         $this->connection->close();
     }
 
