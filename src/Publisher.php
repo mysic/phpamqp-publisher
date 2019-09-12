@@ -33,7 +33,7 @@ class Publisher
     }
 
     /**
-     * @param array  $msg
+     * @param string $msg
      * @param array  $properties
      * @throws \Exception
      */
